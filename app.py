@@ -11,7 +11,7 @@ from PIL import ImageFont
 from PIL import ImageDraw 
 
 import pygsheets
-
+import fpdf
 from apiclient import discovery
 import oauth2client
 from oauth2client import client
@@ -38,10 +38,18 @@ things = [
     ('Out on the town', 'go-out-on-the-town.jpg'),
     ('Run', 'go-for-runs.jpg'),
     ('Swim', 'go-swimming.jpg'),
-    ('Wear outfits', 'wear-outfits.jpg)')
+    ('Wear outfits', 'wear-outfits.jpg')
 ]
 
 ALL_THINGS = dict(things)
+
+
+def concatenate(filenames, into='out.pdf'):
+    pdf = fpdf.FPDF(unit='pt', format=(2550, 3300))
+    for image in filenames:
+        pdf.add_page()
+        pdf.image(image, 0, 0)
+    pdf.output(into, "F")
 
 
 def break_text(text, font, maxsize=2300):
@@ -136,6 +144,9 @@ class Cards(object):
         self.drive = get_drive()
         self.rows = self.worksheet.all_values()
 
+    def get_row(self, idx):
+        return self.rows[idx-1]
+    
     def download(self, file_id, target):
         request = self.drive.files().get_media(fileId=file_id)
         fh = io.BytesIO()
@@ -159,8 +170,19 @@ class Cards(object):
         raise PictureNotFound(dog_name)
 
     def generate_row(self, row):
-        dog_name, sex, birthdate, looks_like, unique, *vector = self.rows[row-1]
+        dog_name, sex, birthdate, looks_like, unique, *vector = self.get_row(row)
         things = select_things(vector)
         dog_pic = self.get_picture(dog_name)
         return generate(dog_name, sex, birthdate,
                         looks_like, things, unique, dog_pic)
+
+    def generate_file_for_row(self, row):
+        img = self.generate_row(row)
+        filename = '/tmp/{}.jpg'.format(self.get_row(row)[0])
+        img.save(filename)
+        return filename
+
+    def generate_file_for_rows(self, rows):
+        filenames = [self.generate_file_for_row(row) for row in rows]
+        concatenate(filenames)
+            
