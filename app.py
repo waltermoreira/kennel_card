@@ -81,7 +81,7 @@ def check_download(message):
         cards.generate_file_for_names(message['selected'])
     except generator.PictureNotFound as exc:
         emit('picture_not_found', {'for': exc.args[0]}, namespace='/apa')
-    except KeyError:
+    except KeyError as exc:
         emit('dog_not_found', {'for': exc.args[0]}, namespace='/apa')
     else:
         emit('do_download', namespace='/apa')
