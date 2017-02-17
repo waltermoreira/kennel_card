@@ -41,28 +41,58 @@
             </div>
           </div>
 
-          <div class="col s12 m6 push-m6">
-            <p>
-              If you add or remove dogs from the spreadsheet, make
-              sure to click <b>Refresh</b>. When you have selected the cards to print, click <b>Download</b>.
-            </p>
-            <p>
-              <a id="refresh" class="waves-effect waves-light btn" style="width:200px">Refresh</a>
-            </p>
-            <p>
-              <a id="downloadbutton" class="waves-effect waves-light blue btn disabled" style="width:200px">Download</a>
-            </p>
-          </div>
+          <form method="POST" action="/download">
+            <div class="col s12 m6 push-m6">
+              <p>
+                If you add or remove dogs from the spreadsheet, make
+                sure to click <b>Refresh</b>. When you have selected the cards to print, click <b>Download</b>.
+              </p>
+              <p>
+                <a id="refresh" class="waves-effect waves-light btn" style="width:200px">Refresh</a>
+              </p>
+              <p>
+                <button id="downloadbutton" class="btn waves-effect waves-light blue disabled" 
+                        type="submit" style="width:200px" name="download">
+                  Download
+                </button>
+              </p>
+            </div>
 
-          <div class="col s12 m6 pull-m6">
-            <select id='custom-headers' multiple='multiple'>
-            </select>
-          </div>
+            <div class="col s12 m6 pull-m6">
+              <select id='custom-headers' multiple='multiple' name="cards">
+              </select>
+            </div>
+          </form>
           
         </div>
       </div>
     </main>
     
+    <div id="modal1" class="modals modal yellow accent-1">
+      <div class="modal-content">
+        <h4>Picture not found</h4>
+        <p>Hey, I couldn't find a picture for <span class="picture-missing"></span>.</p>
+        <p>Make sure to add a picture in the Google folder with name <span class="picture-missing"></span>.jpg
+        (or .png, etc.)
+        </p>
+      </div>
+      <div class="modal-footer yellow accent-1">
+        <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Dismiss</a>
+      </div>
+    </div>
+
+    <div id="modal2" class="modals modal yellow accent-1">
+      <div class="modal-content">
+        <h4>Dog not found</h4>
+        <p>Hey, I couldn't find the pup <span class="dog-missing"></span>.</p>
+        <p>Make sure to hit the refresh button if rows have been added or removed from the spreadsheet.
+        </p>
+      </div>
+      <div class="modal-footer yellow accent-1">
+        <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Dismiss</a>
+      </div>
+    </div>
+
     <div class="row" id="info" style="display:none">
       <div class="col s12 m4 offset-m4">
         <div class="card-panel yellow accent-1" id="exception" style="display:none">
@@ -155,6 +185,12 @@
        var url = "http://" + document.domain + ":" + location.port;
        var socket = io.connect(url + "/apa");
 
+       $('.modals').modal({
+         complete: function() {
+           set_download_button();
+         }
+       });
+
        setup_select();
 
        socket.emit('refresh_dogs');
@@ -163,34 +199,10 @@
          socket.emit('refresh_dogs');
        });
 
-       $('input').keyup(function() {
-         var empty = false;
-         $('input').each(function() {
-           if ($(this).val() == '') {
-             empty = true;
-           }
-         });
-         if (!empty) {
-             $('button').removeClass('disabled').prop('disabled', false);
-         } else {
-             $('button').addClass('disabled').prop('disabled', true);
-         }
-       });
-
-       $('#the-form').submit(function(event) {
-         $('button').addClass('disabled').prop('disabled', true);
-         $('#info').show();
-         $('#loading-wheel').show();
-         socket.emit('start', {
-           'url': $('#url').val(),
-           'fund': $('#fund').val(),
-           'campaign': $('#campaign').val(),
-           'subcampaign': $('#subcampaign').val(),
-           'appeal': $('#appeal').val(),
-           'package': $('#package').val(),
-           'payment': $('#payment').val()
-         });
-         $('#reading').show();
+       $('#downloadbutton').click(function() {
+         $('#downloadbutton').addClass('disabled').prop('disabled', false);
+         socket.emit('check_download',
+                     {'selected': $('.ms-selection .ms-selected').map(function(i, val) { return val.innerText; }).toArray()});
          return false;
        });
 
@@ -211,9 +223,24 @@
          $('#connecting').show();
        });
 
+       socket.on('picture_not_found', function(msg) {
+         $('.picture-missing').append(msg['for']);
+         $('#modal1').modal('open');
+       });
+
+       socket.on('dog_not_found', function(msg) {
+         $('.dog-missing').append(msg['for']);
+         $('#modal2').modal('open');
+       });
+
        socket.on('exception', function(msg) {
          $('#exception').show();
          $('#exception').html("<pre>"+msg['exception']+"</pre>");
+       });
+
+       socket.on('do_download', function() {
+         console.log('now do download');
+         $('form').submit();
        });
 
        socket.on('disconnect', function() {

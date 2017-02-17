@@ -8,6 +8,7 @@ import socket
 import json
 
 from flask import Flask, render_template, request, redirect, flash
+from flask import send_from_directory
 from flask_socketio import SocketIO, send, emit
 from flask_wtf import FlaskForm
 from flask_login import LoginManager, login_user, login_required, UserMixin
@@ -72,6 +73,23 @@ def refresh_dogs():
     cards.refresh()
     emit('dogs', {'names': list(cards.all_dogs_names())})
 
+@socketio.on('check_download', namespace='/apa')
+def check_download(message):
+    cards.refresh()
+    try:
+        print('got message: {}'.format(message))
+        cards.generate_file_for_names(message['selected'])
+    except generator.PictureNotFound as exc:
+        emit('picture_not_found', {'for': exc.args[0]}, namespace='/apa')
+    except KeyError:
+        emit('dog_not_found', {'for': exc.args[0]}, namespace='/apa')
+    else:
+        emit('do_download', namespace='/apa')
+
+@app.route('/download', methods=['POST'])
+@login_required
+def download():
+    return send_from_directory(directory='.', filename='out.pdf')
 
 class MyForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
