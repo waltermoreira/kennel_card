@@ -6,11 +6,13 @@
     <!--Import materialize.css-->
     <link type="text/css" rel="stylesheet" href="/static/css/materialize.min.css"  media="screen,projection"/>
     <link href="/static/css/font-awesome.min.css" rel="stylesheet">    
-
+    <link href="/static/css/multi-select.css" media="screen" rel="stylesheet" type="text/css">
+    <link href="/static/css/style.css" rel="stylesheet">    
+    
     <!--Let browser know website is optimized for mobile-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-    <title>Elevate Batch Uploading</title>
+    <title>Kennel Card Generator</title>
   </head>
 
   <body>
@@ -19,7 +21,7 @@
         <div class="container">
           <div class="nav-wrapper">
             <a href="#" class="brand-logo center">
-              Elevate Batch Uploading
+              Kennel Card Generator
             </a>
           </div>
         </div>
@@ -29,124 +31,39 @@
     <main>
       <div class="container"">
         <div class="row">
-          <form id="the-form" class="col s12">
-            <div class="row">
-              <div class="col s12">
-                <p>
-                  Enter the full URL of the Google Spreadsheet with the Elevate Report to upload.
-                  Make sure that:
-                  <ul class="browser-default">
-                    <li>The spreadsheet allows editing to anyone with the link.</li>
-                    <li>The columns of the spreadsheet are untouched
-                    from the Elevate report. You can filter rows, but
-                      leave the columns as they were in the original report.</li>
-                  </ul>
-                </p>
-              </div>
-              <div class="input-field col s12">
-                <input id="url" type="text" class="validate">
-                <label for="url">Google Spreadsheet Url</label>
-              </div>
-              <div class="col s12">
-                Fill the proper categories for this report. Make sure
-                the values are exactly as they appear in the dropdown
-                menus of Evaluate (same captitalization, spaces, etc.).
-              </div>
-              <div class="input-field col s12 m6">
-                <input id="fund" type="text" class="validate">
-                <label for="fund">Fund</label>
-              </div>
-              <div class="input-field col s12 m6">
-                <input id="campaign" type="text" class="validate">
-                <label for="campaign">Campaign</label>
-              </div>
-              <div class="input-field col s12 m6">
-                <input id="subcampaign" type="text" class="validate">
-                <label for="campaign">Sub-Campaign</label>
-              </div>
-              <div class="input-field col s12 m6">
-                <input id="appeal" type="text" class="validate">
-                <label for="appeal">Appeal</label>
-              </div>
-              <div class="input-field col s12 m6">
-                <input id="package" type="text" class="validate">
-                <label for="package">Appeal</label>
-              </div>
-              <div class="input-field col s12 m6">
-                <input id="payment" type="text" class="validate">
-                <label for="payment">Payment</label>
-              </div>
-              <div class="col s12 m2 offset-m5 center">
-                <button class="btn waves-effect waves-light disabled" type="submit" name="action">
-                  Start Upload
-                </button>
-              </div>
+          <div class="col s12">
+            <div class="section">
+            <h5>Edit the information for the dogs at:</h5>
+            <ul class="browser-default">
+              <li><a href="">This Google Spreadsheet</a></li>
+              <li><a href="">This Google Folder</a>: add pictures with the name of the dog as it appears in the Spreadsheet</li>
+            </ul>
             </div>
-          </form>
+          </div>
+
+          <div class="col s12 m6 push-m6">
+            <p>
+              If you add or remove dogs from the spreadsheet, make
+              sure to click <b>Refresh</b>. When you have selected the cards to print, click <b>Download</b>.
+            </p>
+            <p>
+              <a id="refresh" class="waves-effect waves-light btn" style="width:200px">Refresh</a>
+            </p>
+            <p>
+              <a id="downloadbutton" class="waves-effect waves-light blue btn disabled" style="width:200px">Download</a>
+            </p>
+          </div>
+
+          <div class="col s12 m6 pull-m6">
+            <select id='custom-headers' multiple='multiple'>
+            </select>
+          </div>
+          
         </div>
       </div>
     </main>
     
     <div class="row" id="info" style="display:none">
-      <div class="col s12 center">
-        <div id="loading-wheel" class="preloader-wrapper small active" style="display:none;vertical-align:middle;margin-bottom:30px">
-          <div class="spinner-layer spinner-green-only">
-            <div class="circle-clipper left">
-              <div class="circle"></div>
-            </div><div class="gap-patch">
-              <div class="circle"></div>
-            </div><div class="circle-clipper right">
-              <div class="circle"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col s12 m6 offset-m4">
-        <span id="reading" style="display:none">
-          Reading Google spreadsheet:
-          &nbsp;
-        </span>
-      </div>
-      <div class="col s12 m6 offset-m4">
-        <span id="connecting" style="display:none">
-          Connecting to Elevate:
-          &nbsp;
-        </span>
-      </div>
-      <div class="col s12 m6 offset-m4">
-        <span id="reading-db" style="display:none">
-          Reading database of users from Elevate:
-          &nbsp;
-        </span>
-      </div>
-      <div class="col s12 m6 offset-m4">
-        <span id="pass-1-status" style="display:none">
-          Pass 1: row <span class="row-number"></span> <span class="row-status"></span>
-          <br>
-          <div class="result" style="display:none">
-          &nbsp;&nbsp;&nbsp;
-          <span class="rows-ok"></span> rows ok | 
-          <span class="rows-failed"></span> rows failed
-          </div>
-        </span>
-      </div>
-      <div class="col s12 m6 offset-m4">
-        <span id="re-reading-db" style="display:none">
-          There were failures, re-reading database of users from Elevate:
-          &nbsp;
-        </span>
-      </div>
-      <div class="col s12 m6 offset-m4">
-        <span id="pass-2-status" style="display:none">
-          Pass 2: row <span class="row-number"></span> <span class="row-status"></span>
-          <br>
-          <div class="result" style="display:none">
-          &nbsp;&nbsp;&nbsp;
-          <span class="rows-ok">0</span> rows ok | 
-          <span class="rows-failed">0</span> rows failed
-          </div>
-        </span>
-      </div>
       <div class="col s12 m4 offset-m4">
         <div class="card-panel yellow accent-1" id="exception" style="display:none">
         </div>
@@ -157,7 +74,7 @@
       <div class="footer-copyright">
         <div class="container">
           © 2017 Walter Moreira
-          <a class="grey-text text-lighten-4 right" href="https://github.com/austinpetsalive/batch_uploading">Source Code</a>
+          <a class="grey-text text-lighten-4 right" href="https://github.com/austinpetsalive/kennel_card">Source Code</a>
         </div>
       </div>
     </footer>
@@ -166,12 +83,85 @@
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script type="text/javascript" src="/static/js/materialize.min.js"></script>
     <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
-    <!-- <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
-       -->
+    <script src="/static/js/jquery.multi-select.js" type="text/javascript"></script>
+    <script src="/static/js/jquery.quicksearch.js" type="text/javascript"></script>
+
     <script type="text/javascript">
+     function setup_select() {
+       $('#custom-headers').multiSelect({
+         selectableHeader: 
+                           `All Cards:<br>
+              <input type='text' id='search-selectable' class='search-input' autocomplete='off' placeholder='try \"Fido\"'>
+              <br>
+              <a href="#" id="selectall">select all</a>`,
+         selectionHeader:
+                         `Cards To Print:<br>
+              <input type='text' id='search-selection' class='search-input' autocomplete='off' placeholder='try \"Fido\"'>
+              <br>
+              <a href="#" id="deselectall">deselect all</a>`,
+         afterInit: function(ms){
+           var that = this,
+               $selectableSearch = $('#search-selectable');
+               $selectionSearch = $('#search-selection');
+               selectableSearchString = '#'+that.$container.attr('id')+' .ms-elem-selectable:not(.ms-selected)',
+               selectionSearchString = '#'+that.$container.attr('id')+' .ms-elem-selection.ms-selected';
+
+           that.qs1 = $selectableSearch.quicksearch(selectableSearchString)
+                                       .on('keydown', function(e){
+                                         if (e.which === 40){
+                                           that.$selectableUl.focus();
+                                           return false;
+                                         }
+                                       });
+
+           that.qs2 = $selectionSearch.quicksearch(selectionSearchString)
+                                      .on('keydown', function(e){
+                                        if (e.which == 40){
+                                          that.$selectionUl.focus();
+                                          return false;
+                                        }
+                                      });
+           $('#selectall').click(function(){
+             $('#custom-headers').multiSelect('select_all');
+             return false;
+           });
+           $('#deselectall').click(function(){
+             $('#custom-headers').multiSelect('deselect_all');
+             return false;
+           });
+         },
+         afterSelect: function(){
+           this.qs1.cache();
+           this.qs2.cache();
+           set_download_button();
+         },
+         afterDeselect: function(){
+           this.qs1.cache();
+           this.qs2.cache();
+           set_download_button();
+         }
+       });
+     };
+
+     function set_download_button() {
+       if ($('.ms-selection .ms-selected').length > 0) {
+         $('#downloadbutton').removeClass('disabled').prop('disabled', false);
+       } else {
+         $('#downloadbutton').addClass('disabled').prop('disabled', false)
+       };
+     };
+
      $(document).ready(function() {
        var url = "http://" + document.domain + ":" + location.port;
        var socket = io.connect(url + "/apa");
+
+       setup_select();
+
+       socket.emit('refresh_dogs');
+
+       $('#refresh').click(function() {
+         socket.emit('refresh_dogs');
+       });
 
        $('input').keyup(function() {
          var empty = false;
@@ -204,67 +194,21 @@
          return false;
        });
 
+       socket.on('dogs', function(msg) {
+         console.log('received dogs to print');
+         console.log(msg);
+         $('#custom-headers').empty();
+         msg['names'].forEach(function(cur, idx) {
+           console.log('processing ' + cur);
+           $('#custom-headers').append(
+             `<option value='${cur}'>${cur}</option>`);
+         });
+         $('#custom-headers').multiSelect('refresh');
+       });
+
        socket.on('sheet_read', function(msg) {
          $('#reading').after("<span>ok. (" + msg['rows'] + " rows)</span>");
          $('#connecting').show();
-       });
-
-       socket.on('driver_started', function(msg) {
-         $('#connecting').after("<span>ok.</span>");
-         $('#reading-db').show();
-       });
-
-       socket.on('db_read', function(msg) {
-         $('#reading-db').after("<span>ok.</span>");
-       });
-
-       socket.on('pass-1', function(msg) {
-         $('#pass-1-status').show();
-       });
-
-       socket.on('pass-2', function(msg) {
-         $('#pass-2-status').show();
-       });
-
-       socket.on('row-1', function(msg) {
-         var row = msg['row'];
-         $('#pass-1-status .row-number').text(row);
-         var status = 'ok';
-         if (msg['cur'] != 'yes') {
-           status = 'failed';
-         }
-         $('#pass-1-status .row-status').text(status);
-       });
-       
-       socket.on('row-2', function(msg) {
-         var row = msg['row'];
-         $('#pass-2-status .row-number').text(row);
-         var status = 'ok';
-         if (msg['cur'] != 'yes') {
-           status = 'failed';
-         }
-         $('#pass-2-status .row-status').text(status);
-       });
-
-       socket.on('pass-1-result', function(msg) {
-         $('#pass-1-status .result').show();
-         $('#pass-1-status .rows-ok').text(msg['rows_ok']);
-         $('#pass-1-status .rows-failed').text(msg['rows_failed']);
-       });
-
-       socket.on('pass-2-result', function(msg) {
-         $('#pass-2-status .result').show();
-         $('#pass-2-status .rows-ok').text(msg['rows_ok']);
-         $('#pass-2-status .rows-failed').text(msg['rows_failed']);
-         $('#loading-wheel').hide();
-       });
-
-       socket.on('notify-failures', function(msg) {
-         $('#re-reading-db').show();
-       });
-
-       socket.on('reread_db', function(msg) {
-         $('#re-reading-db').after("<span>ok.</span>");
        });
 
        socket.on('exception', function(msg) {
@@ -275,6 +219,7 @@
        socket.on('disconnect', function() {
          console.log('oops, disconnected!');
        });
+
      });
     </script>
 
