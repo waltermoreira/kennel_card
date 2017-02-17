@@ -1,0 +1,12 @@
+version: '2'
+
+services:
+  kennel_card:
+    build: .
+    volumes:
+      - .:/data
+    environment:
+      PASSWORD:
+      SHEET:
+      FOLDER:
+      GOOGLE_CREDENTIALS: "/data/secret.json"
