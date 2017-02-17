@@ -1,6 +1,7 @@
 import eventlet
-eventlet.monkey_patch()
+#eventlet.monkey_patch()
 
+import sys
 import time
 import os
 import socket
@@ -13,13 +14,15 @@ from flask_login import LoginManager, login_user, login_required, UserMixin
 from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired
 
+import generator
+
 
 def get_env_var(name):
     try:
         return os.environ[name]
     except KeyError:
         print('Environment variable {0} is needed'.format(name.upper()))
-        
+        sys.exit(1)
 
 PASSWORD = get_env_var('PASSWORD')
 
@@ -34,6 +37,8 @@ app.config.update(
 
 login_manager.init_app(app)
 socketio = SocketIO(app, logger=True, engineio_logger=True)
+
+cards = generator.Cards()
 
 
 @app.route('/')
@@ -61,6 +66,11 @@ def ws_city(message):
     print(message['city'])
     emit('city', {'city': message['city']},
                   namespace="/apa")
+
+@socketio.on('refresh_dogs', namespace='/apa')
+def refresh_dogs():
+    cards.refresh()
+    emit('dogs', {'names': list(cards.all_dogs_names())})
 
 
 class MyForm(FlaskForm):
@@ -113,4 +123,4 @@ def start(message):
         
 
 if __name__ == '__main__':
-    socketio.run(app, "0.0.0.0", port=80)
+    socketio.run(app, "0.0.0.0", port=8000)

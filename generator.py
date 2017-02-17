@@ -19,16 +19,22 @@ from oauth2client import tools
 from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.http import MediaIoBaseDownload
 
+import iso8601
 
-def get_env_var(name):
-    try:
-        return os.environ[name]
-    except KeyError:
-        print('Environment variable {0} is needed'.format(name.upper()))
+
+def get_env_vars(*names):
+    missing = []
+    for name in names:
+        try:
+            yield os.environ[name]
+        except KeyError:
+            missing.append(name.upper())
+    if missing:
+        print('Environment variables {0} are needed'.format(', '.join(missing)))
+        sys.exit(1)
         
 
-SHEET = get_env_var('SHEET')
-FOLDER = get_env_var('FOLDER')
+SHEET, FOLDER = get_env_vars('SHEET', 'FOLDER')
 
 
 #SHEET = '1bfedgkbyRgiZxEqmb9QXQHdu3ZV3BNgPVb327ku4e2Y'
@@ -152,6 +158,9 @@ class Cards(object):
         self.worksheet = get_sheet(sheet)
         self.folder = folder
         self.drive = get_drive()
+        self.refresh()
+
+    def refresh(self):
         self.rows = self.worksheet.all_values()
 
     def get_row(self, idx):
@@ -196,3 +205,10 @@ class Cards(object):
         filenames = [self.generate_file_for_row(row) for row in rows]
         concatenate(filenames)
             
+    def all_dogs_names(self):
+        for row in self.rows[1:]:
+            yield row[0]
+
+    def all_dogs_names_sorted(self):
+        return sorted(self.all_dogs_names())
+    
