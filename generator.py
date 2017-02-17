@@ -162,6 +162,7 @@ class Cards(object):
 
     def refresh(self):
         self.rows = self.worksheet.all_values()
+        self.by_name = dict((x, y) for x,*y in self.rows[1:])
 
     def get_row(self, idx):
         return self.rows[idx-1]
@@ -204,7 +205,24 @@ class Cards(object):
     def generate_file_for_rows(self, rows):
         filenames = [self.generate_file_for_row(row) for row in rows]
         concatenate(filenames)
-            
+
+    def generate_name(self, dog_name):
+        sex, birthdate, looks_like, unique, *vector = self.by_name[dog_name]
+        things = select_things(vector)
+        dog_pic = self.get_picture(dog_name)
+        return generate(dog_name, sex, birthdate,
+                        looks_like, things, unique, dog_pic)
+
+    def generate_file_for_name(self, name):
+        img = self.generate_name(name)
+        filename = '/tmp/{}.jpg'.format(name)
+        img.save(filename)
+        return filename
+
+    def generate_file_for_names(self, names):
+        filenames = [self.generate_file_for_name(name) for name in names]
+        concatenate(filenames)
+
     def all_dogs_names(self):
         for row in self.rows[1:]:
             yield row[0]
