@@ -36,8 +36,8 @@
             <div class="section">
             <h5>Edit the information for the dogs at:</h5>
             <ul class="browser-default">
-              <li><a href="">This Google Spreadsheet</a></li>
-              <li><a href="">This Google Folder</a>: add pictures with the name of the dog as it appears in the Spreadsheet</li>
+              <li><a href="{{ sheet_link }}">This Google Spreadsheet</a></li>
+              <li><a href="{{ folder_link }}">This Google Folder</a>: add pictures with the name of the dog as it appears in the Spreadsheet</li>
             </ul>
             </div>
           </div>
@@ -119,7 +119,7 @@
     <footer class="page-footer" style="padding-top:0px">
       <div class="container">
             <p class="grey-text text-lighten-4">
-              Kennel Cards idea, design, and software, is a collaboration with: Ryan Plunkett, Lara Cirkovic, Emily Pokorny, Adam Saraceno, Walter Moreira
+              Kennel Cards idea, design, and software, is a collaboration with: Ryan Plunkett, Lara Cirkovic, Emily Pokorny, Adam Saraceno, Walter Moreira.
               <br>
               The design is released under a <a class="grey-text text-lighten-1" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
               <br>
@@ -249,12 +249,12 @@
        });
 
        socket.on('picture_not_found', function(msg) {
-         $('.picture-missing').append(msg['for']);
+         $('.picture-missing').text(msg['for']);
          $('#modal1').modal('open');
        });
 
        socket.on('dog_not_found', function(msg) {
-         $('.dog-missing').append(msg['for']);
+         $('.dog-missing').text(msg['for']);
          $('#modal2').modal('open');
        });
 

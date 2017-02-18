@@ -18,14 +18,20 @@ from wtforms.validators import DataRequired
 import generator
 
 
-def get_env_var(name):
-    try:
-        return os.environ[name]
-    except KeyError:
-        print('Environment variable {0} is needed'.format(name.upper()))
+def get_env_vars(*names):
+    missing = []
+    for name in names:
+        try:
+            yield os.environ[name]
+        except KeyError:
+            missing.append(name.upper())
+    if missing:
+        print('Environment variables {0} are needed'.format(', '.join(missing)))
         sys.exit(1)
 
-PASSWORD = get_env_var('PASSWORD')
+
+PASSWORD, SHEET, FOLDER = get_env_vars('PASSWORD', 'SHEET', 'FOLDER')
+
 
 login_manager = LoginManager()
 
@@ -45,7 +51,11 @@ cards = generator.Cards()
 @app.route('/')
 @login_required
 def main():
-    return render_template('main.html')
+    return render_template(
+        'main.html',
+        sheet_link='https://docs.google.com/spreadsheets/d/{}'.format(SHEET),
+        folder_link='https://drive.google.com/drive/u/1/folders/{}'.format(FOLDER)
+    )
 
 @login_manager.unauthorized_handler
 def unauthorized_callback():
