@@ -38,9 +38,6 @@ SHEET, FOLDER, GOOGLE_CREDENTIALS = get_env_vars(
     'SHEET', 'FOLDER', 'GOOGLE_CREDENTIALS')
 
 
-#SHEET = '1bfedgkbyRgiZxEqmb9QXQHdu3ZV3BNgPVb327ku4e2Y'
-#FOLDER = '0B3qV0KkMXsKxbHRCVWhVT1NXcGc'
-
 things = [
     ('Car rides', 'go-for-car-rides.jpg'),
     ('Cats', 'hang-out-with-cats.jpg'),
