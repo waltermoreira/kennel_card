@@ -64,19 +64,10 @@ def unauthorized_callback():
 @socketio.on('connect', namespace='/apa')
 def ws_conn():
     print('Connected {}'.format(request.sid))
-#    socketio.emit('msg', {'count': data['connected']}, namespace='/apa')
-
 
 @socketio.on('disconnect', namespace='/apa')
 def ws_disconn():
     print('Disconnected {}'.format(request.sid))
-#    socketio.emit('msg', {'count': data['connected']}, namespace='/apa')
-
-@socketio.on('city', namespace='/apa')
-def ws_city(message):
-    print(message['city'])
-    emit('city', {'city': message['city']},
-                  namespace="/apa")
 
 @socketio.on('refresh_dogs', namespace='/apa')
 def refresh_dogs():
@@ -133,26 +124,6 @@ def login():
             flash('wrong password')
     return render_template('login.html', form=form)
 
-
-@socketio.on('start', namespace='/apa')
-def start(message):
-    s = socket.socket()
-    s.connect(('172.17.0.1', 9999))
-    f = s.makefile('rw')
-
-    def _bg(r, f):
-        f.write(json.dumps(message) + '\n')
-        f.flush()
-
-        while True:
-            line = json.loads(f.readline())
-            if line['status'] == 'end':
-                print('all done')
-                return
-            socketio.emit(line['tag'], line, namespace='/apa', room=r)
-
-    eventlet.spawn(_bg, request.sid, f)
-        
 
 if __name__ == '__main__':
     socketio.run(app, "0.0.0.0", port=80)
