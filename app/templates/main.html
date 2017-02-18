@@ -71,9 +71,16 @@
                   Download
                 </button>
               </p>
+              <div id="progress-bar" style="display:none">
+                <p>
+                  Generating cards...
+                </p>
+                <div class="progress">
+                  <div class="indeterminate"></div>
+                </div>
+              </div>
               <p>&nbsp;</p>
             </div>
-
             <div class="col s12 m6 pull-m6">
               <select id='custom-headers' multiple='multiple' name="cards">
               </select>
@@ -83,7 +90,7 @@
         </div>
       </div>
     </main>
-    
+
     <div id="modal1" class="modals modal yellow accent-1">
       <div class="modal-content">
         <h4>Picture not found</h4>
@@ -199,6 +206,7 @@
      };
 
      function set_download_button() {
+       $('#progress-bar').hide();
        if ($('.ms-selection .ms-selected').length > 0) {
          $('#downloadbutton').removeClass('disabled').prop('disabled', false);
        } else {
@@ -226,6 +234,7 @@
 
        $('#downloadbutton').click(function() {
          $('#downloadbutton').addClass('disabled').prop('disabled', false);
+         $('#progress-bar').show();
          socket.emit('check_download',
                      {'selected': $('.ms-selection .ms-selected').map(function(i, val) { return val.innerText; }).toArray()});
          return false;
@@ -266,6 +275,7 @@
        socket.on('do_download', function() {
          console.log('now do download');
          $('form').submit();
+         set_download_button();
        });
 
        socket.on('disconnect', function() {
