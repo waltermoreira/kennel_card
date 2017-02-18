@@ -13,4 +13,5 @@ RUN /kennel_card/bin/pip install git+git://github.com/nithinmurali/pygsheets@308
 EXPOSE 80
 EXPOSE 443
 
-CMD /kennel_card/bin/python /app/app.py
+WORKDIR /app
+CMD /kennel_card/bin/python app.py

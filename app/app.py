@@ -1,5 +1,5 @@
 import eventlet
-#eventlet.monkey_patch()
+eventlet.monkey_patch()
 
 import sys
 import time
@@ -83,6 +83,10 @@ def check_download(message):
         emit('picture_not_found', {'for': exc.args[0]}, namespace='/apa')
     except KeyError as exc:
         emit('dog_not_found', {'for': exc.args[0]}, namespace='/apa')
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        raise
     else:
         emit('do_download', namespace='/apa')
 
@@ -141,4 +145,4 @@ def start(message):
         
 
 if __name__ == '__main__':
-    socketio.run(app, "0.0.0.0", port=8000)
+    socketio.run(app, "0.0.0.0", port=80)

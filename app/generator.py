@@ -34,7 +34,8 @@ def get_env_vars(*names):
         sys.exit(1)
         
 
-SHEET, FOLDER = get_env_vars('SHEET', 'FOLDER')
+SHEET, FOLDER, GOOGLE_CREDENTIALS = get_env_vars(
+    'SHEET', 'FOLDER', 'GOOGLE_CREDENTIALS')
 
 
 #SHEET = '1bfedgkbyRgiZxEqmb9QXQHdu3ZV3BNgPVb327ku4e2Y'
@@ -132,13 +133,13 @@ def generate(dog_name, sex, birthdate, looks_like, things, unique, dog_pic):
 
 
 def get_sheet(sheet_id):
-    c = pygsheets.authorize(service_file='secret.json')
+    c = pygsheets.authorize(service_file=GOOGLE_CREDENTIALS)
     sheet = c.open_by_key(sheet_id)
     return sheet.worksheet_by_title('Sheet1')
 
 def get_drive():
     creds = ServiceAccountCredentials.from_json_keyfile_name(
-        'secret.json', scopes=['https://www.googleapis.com/auth/drive'])
+        GOOGLE_CREDENTIALS, scopes=['https://www.googleapis.com/auth/drive'])
     http = creds.authorize(httplib2.Http())
     return discovery.build('drive', 'v3', http=http)
 
