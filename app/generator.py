@@ -5,6 +5,7 @@ import argparse
 import io
 import sys
 import datetime
+import itertools
 
 from PIL import Image
 from PIL import ImageFont
@@ -142,7 +143,7 @@ def generate_checklist(dog_name):
     img.paste(text_img, (460,100))
     img.paste(text_img_rotated, (2400-size[0], 3000))
 
-    return img
+    return img.rotate(180)
 
 def get_sheet(sheet_id):
     c = pygsheets.authorize(service_file=GOOGLE_CREDENTIALS)
@@ -232,8 +233,17 @@ class Cards(object):
         img.save(filename)
         return filename
 
+    def generate_checklist_for_name(self, name):
+        img = generate_checklist(name)
+        filename = '/tmp/{}_checklist.jpg'.format(name)
+        img.save(filename)
+        return filename
+
     def generate_file_for_names(self, names):
-        filenames = [self.generate_file_for_name(name) for name in names]
+        filenames = itertools.chain.from_iterable(
+            (self.generate_file_for_name(name),
+             self.generate_checklist_for_name(name))
+            for name in names)
         concatenate(filenames)
 
     def all_dogs_names(self):
