@@ -128,6 +128,21 @@ def generate(dog_name, sex, birthdate, looks_like, things, unique, dog_pic):
 
     return img
 
+def generate_checklist(dog_name):
+    img = Image.open('extra/checklist.jpg')
+    draw = ImageDraw.Draw(img)
+    font1 = ImageFont.truetype("fonts/Lato-Regular.ttf", 150)
+
+    size = font1.getsize(dog_name)
+    text_img = Image.new('L', size, 255)
+    draw_text_img = ImageDraw.Draw(text_img)
+    draw_text_img.text((0,0), dog_name, font=font1, fill=0)
+
+    text_img_rotated = text_img.rotate(180)
+    img.paste(text_img, (460,100))
+    img.paste(text_img_rotated, (2400-size[0], 3000))
+
+    return img
 
 def get_sheet(sheet_id):
     c = pygsheets.authorize(service_file=GOOGLE_CREDENTIALS)
