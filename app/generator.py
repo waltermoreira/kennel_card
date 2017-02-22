@@ -122,7 +122,7 @@ def generate(dog_name, sex, birthdate, looks_like, things, unique, dog_pic):
     draw.text((col2, 1050), birthdate, (0,0,0), font=font2)
     n = len(looks_like.split('/'))
     looks = itertools.chain.from_iterable(
-        break_text(x.strip(), font3, maxsize=760, indent=True, total=n)
+        break_text(x.strip(), font3, maxsize=730, indent=True, total=n)
         for x in looks_like.split('/'))
 
     for i, look in enumerate(looks):
