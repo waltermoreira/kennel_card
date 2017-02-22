@@ -67,15 +67,27 @@ def concatenate(filenames, into='out.pdf'):
     pdf.output(into, "F")
 
 
-def break_text(text, font, maxsize=2300):
+def break_text(text, font, maxsize=2300, indent=False, total=1):
     partial = []
+    first = True
     for c in text.split():
-        s = font.getsize(' '.join(partial))[0]
+        s = font.getsize(' '.join(partial + [c]))[0]
         if s > maxsize:
-            yield ' '.join(partial)
+            line = ' '.join(partial)
+            if first and total > 1:
+                line = '. ' + line
+            if indent and not first and total > 1:
+                line = '  ' + line
+            yield line
+            first = False
             partial = []
         partial.append(c)
-    yield ' '.join(partial)
+    line = ' '.join(partial)
+    if first and total > 1:
+        line = '. ' + line
+    if indent and not first and total > 1:
+        line = '  ' + line
+    yield line
 
 
 DOG_NAME = 'Buddy Franklin'
@@ -108,7 +120,10 @@ def generate(dog_name, sex, birthdate, looks_like, things, unique, dog_pic):
     draw.text((col1, 230), dog_name, (0,0,0), font=font1)
     draw.text((col2, 750), sex, (0,0,0), font=font2)
     draw.text((col2, 1050), birthdate, (0,0,0), font=font2)
-    looks = [x.strip() for x in looks_like.split('/')]
+    n = len(looks_like.split('/'))
+    looks = itertools.chain.from_iterable(
+        break_text(x.strip(), font3, maxsize=760, indent=True, total=n)
+        for x in looks_like.split('/'))
 
     for i, look in enumerate(looks):
         draw.text((col2, 1370+i*100), look, (0,0,0), font=font3)
