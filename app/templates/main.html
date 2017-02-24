@@ -116,6 +116,18 @@
       </div>
     </div>
 
+    <div id="modal3" class="modals modal yellow accent-1">
+      <div class="modal-content">
+        <h4>Generic Exception</h4>
+        <p>Please, copy and paste the message below and send it to support.</p>
+        <div id="exception">
+        </div>
+      </div>
+      <div class="modal-footer yellow accent-1">
+        <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Dismiss</a>
+      </div>
+    </div>
+
     <div class="row" id="info" style="display:none">
       <div class="col s12 m4 offset-m4">
         <div class="card-panel yellow accent-1" id="exception" style="display:none">
@@ -267,9 +279,9 @@
          $('#modal2').modal('open');
        });
 
-       socket.on('exception', function(msg) {
-         $('#exception').show();
-         $('#exception').html("<pre>"+msg['exception']+"</pre>");
+       socket.on('general_exception', function(msg) {
+         $('#exception').html("<pre>"+msg['for']+"</pre>");
+         $('#modal3').modal('open');
        });
 
        socket.on('do_download', function() {

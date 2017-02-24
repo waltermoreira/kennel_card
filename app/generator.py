@@ -1,3 +1,4 @@
+import time
 import os
 import httplib2
 import datetime
@@ -6,6 +7,9 @@ import io
 import sys
 import datetime
 import itertools
+import socketserver
+import traceback
+import json
 
 from PIL import Image
 from PIL import ImageFont
@@ -268,3 +272,77 @@ class Cards(object):
     def all_dogs_names_sorted(self):
         return sorted(self.all_dogs_names())
     
+
+class SocketHandler(socketserver.StreamRequestHandler):
+
+    def _write(self, dic):
+        self.wfile.write('{}\n'.format(json.dumps(dic)).encode('utf-8'))
+        self.wfile.flush()
+    
+    def handle(self):
+        while True:
+            try:
+                line = self.rfile.readline().decode('utf-8')
+                print(f'received: {line}')
+                data = json.loads(line)
+                fun = data['tag']
+                getattr(self, fun)(data)
+            except:
+                self._write({
+                    'status': 'error',
+                    'tag': 'exception',
+                    'exception': traceback.format_exc()})
+        
+    def all_dogs_names(self, data):
+        self._write({
+            'status': 'ok',
+            'all_dogs_names': list(self.server.cards.all_dogs_names())})
+
+    def refresh(self, data):
+        self.server.cards.refresh()
+        self._write({
+            'status': 'ok'})
+
+    def generate(self, data):
+        try:
+            self.server.cards.generate_file_for_names(data['names'])
+            raise Exception('foo')
+            self._write({
+                'status': 'ok'})
+        except PictureNotFound as exc:
+            self._write({
+                'status': 'error',
+                'exception': 'PictureNotFound',
+                'args': exc.args[0]})
+        except KeyError as exc:
+            self._write({
+                'status': 'error',
+                'exception': 'KeyError',
+                'args': exc.args[0]})
+        except Exception as exc:
+            self._write({
+                'status': 'error',
+                'exception': 'Exception',
+                'args': traceback.format_exc()})
+
+
+class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+
+    allow_reuse_address = True
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.cards = Cards()
+        print('server initialized')
+
+
+def server():
+    server = ThreadedTCPServer(('0.0.0.0', 1234), SocketHandler)
+    try:
+        server.serve_forever()
+    finally:
+        server.server_close()
+        
+
+if __name__ == '__main__':
+    server()

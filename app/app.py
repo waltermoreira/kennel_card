@@ -15,8 +15,6 @@ from flask_login import LoginManager, login_user, login_required, UserMixin
 from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired
 
-import generator
-
 
 def get_env_vars(*names):
     missing = []
@@ -45,7 +43,17 @@ app.config.update(
 login_manager.init_app(app)
 socketio = SocketIO(app, logger=True, engineio_logger=True)
 
-cards = generator.Cards()
+sock = socket.create_connection(('localhost', 1234))
+cards = sock.makefile('rw')
+
+def cards_read():
+    line = cards.readline()
+    print(f'cards_read: {line}')
+    return json.loads(line)
+
+def cards_write(data):
+    cards.write(json.dumps(data) + '\n')
+    cards.flush()
 
 
 @app.route('/')
@@ -71,25 +79,44 @@ def ws_disconn():
 
 @socketio.on('refresh_dogs', namespace='/apa')
 def refresh_dogs():
-    cards.refresh()
-    emit('dogs', {'names': list(cards.all_dogs_names())})
+    def _bg(room):
+        cards_write({'tag': 'refresh'})
+        result = cards_read()
+        cards_write({'tag': 'all_dogs_names'})
+        result = cards_read()
+        socketio.emit('dogs', {'names': result['all_dogs_names']},
+                      namespace='/apa', room=room)
+    eventlet.spawn(_bg, request.sid)
 
 @socketio.on('check_download', namespace='/apa')
 def check_download(message):
-    cards.refresh()
-    try:
+    def _bg(room):
+        cards_write({'tag': 'refresh'})
+        result = cards_read()
         print('got message: {}'.format(message))
-        cards.generate_file_for_names(message['selected'])
-    except generator.PictureNotFound as exc:
-        emit('picture_not_found', {'for': exc.args[0]}, namespace='/apa')
-    except KeyError as exc:
-        emit('dog_not_found', {'for': exc.args[0]}, namespace='/apa')
-    except Exception as exc:
-        import traceback
-        traceback.print_exc()
-        raise
-    else:
-        emit('do_download', namespace='/apa')
+        cards_write({
+            'tag': 'generate',
+            'names': message['selected']})
+        result = cards_read()
+        if (result['status'] == 'error'
+               and result['exception'] == 'PictureNotFound'):
+            socketio.emit('picture_not_found',
+                          {'for': result['args']},
+                          namespace='/apa', room=room)
+        elif (result['status'] == 'error'
+              and result['exception'] == 'KeyError'):
+            socketio.emit('dog_not_found',
+                        {'for': result['args']},
+                        namespace='/apa', room=room)
+        elif (result['status'] == 'error'
+              and result['exception'] == 'Exception'):
+            socketio.emit('general_exception',
+                        {'for': result['args']},
+                        namespace='/apa', room=room)
+        else:
+            socketio.emit('do_download', namespace='/apa', room=room)
+
+    eventlet.spawn(_bg, request.sid)
 
 @app.route('/download', methods=['POST'])
 @login_required
