@@ -4,12 +4,14 @@ services:
   kennel_card:
     build: .
     volumes:
+      - ./app:/app
       - .:/data
     ports:
-      - "80:80"
-      - "443:443"
+      - "1234:80"
+      - "5234:443"
     environment:
       PASSWORD:
       SHEET:
       FOLDER:
       GOOGLE_CREDENTIALS: "/data/secret.json"
+    network_mode: "bridge"
