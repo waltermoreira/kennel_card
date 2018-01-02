@@ -1,3 +1,7 @@
+Latest Changes
+==============
+
+Please, check out branch RELATIVE for the latest changes.
 
 License
 =======
