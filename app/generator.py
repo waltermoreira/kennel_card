@@ -306,7 +306,6 @@ class SocketHandler(socketserver.StreamRequestHandler):
     def generate(self, data):
         try:
             self.server.cards.generate_file_for_names(data['names'])
-            raise Exception('foo')
             self._write({
                 'status': 'ok'})
         except PictureNotFound as exc:
